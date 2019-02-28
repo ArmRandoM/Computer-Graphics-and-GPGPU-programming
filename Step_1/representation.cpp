@@ -12,7 +12,7 @@ using namespace std;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void fill_verices_color_buffer(float vertices_and_colours[], float z_min, float z_max);
-void fill_indices(int* indices);
+void fill_indices(int indices[]);
 
 DataFileReader data_file_reader("DEM_test.dat");
 
@@ -32,10 +32,10 @@ int main()
     int values_number_indices = ((data_file_reader.getNumRows()-1) * (data_file_reader.getNumColumns()-1))*6;
 
     //The vertices array contains also the colors for each vertex
-    float vertices_and_colours [values_number_vertices];
+    float* vertices_and_colours = new float [values_number_vertices];
 
     //The indices array contains all indices for each triangle
-    int indices [values_number_indices];
+    int* indices = new int [values_number_indices];
 
     //Function that computes the vertices and colours
     fill_verices_color_buffer(vertices_and_colours, z_min, z_max);
@@ -69,6 +69,8 @@ int main()
     }
 
     Shader ourShader("vertexShader.vs", "fragmentShader.fs");
+    float xCentralOffset = ((data_file_reader.getYllCorner() + data_file_reader.getNumColumns() - 1) * data_file_reader.getCellSize()) / 2;
+    float yCentralOffset = (( data_file_reader.getXllCorner() + data_file_reader.getNumRows() - 1) * data_file_reader.getCellSize()) / 2;
 
     unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -78,10 +80,10 @@ int main()
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_and_colours), vertices_and_colours, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, values_number_vertices*4, vertices_and_colours, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4*values_number_indices, indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -91,12 +93,15 @@ int main()
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    ourShader.use();
+    ourShader.setFloat("xCentralOffset", xCentralOffset );
+    ourShader.setFloat("yCentralOffset", yCentralOffset );
+
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        ourShader.use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, values_number_vertices*3, GL_UNSIGNED_INT, 0);
         glfwSwapBuffers(window);
