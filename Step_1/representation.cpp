@@ -3,8 +3,8 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>
-#include "shader_s.h"
-#include "data_set.h"
+#include "build/shader_s.h"
+#include "build/data_set.h"
 #include <iostream>
 
 using namespace std;
@@ -20,24 +20,24 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 int main()
-{ 
+{
     //The z_min and z_max values used to compute the color for each vertex
     float z_min = data_file_reader.get_z_min();
     float z_max = data_file_reader.get_z_max();
 
     //The number of values for the array of the vertices (the dimension )
     int values_number_vertices = (data_file_reader.getNumRows() * data_file_reader.getNumColumns())*6;
-    
+
     //The number of values for the array of the indices ( the dimension )
     int values_number_indices = ((data_file_reader.getNumRows()-1) * (data_file_reader.getNumColumns()-1))*6;
-    
+
     //The vertices array contains also the colors for each vertex
     float vertices_and_colours [values_number_vertices];
 
     //The indices array contains all indices for each triangle
     int indices [values_number_indices];
 
-    //Function that computes the vertices and colours 
+    //Function that computes the vertices and colours
     fill_verices_color_buffer(vertices_and_colours, z_min, z_max);
 
     //Function that computes the indices that are used for each triangle
@@ -49,7 +49,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); 
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -74,7 +74,7 @@ int main()
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
-    
+
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -85,20 +85,20 @@ int main()
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    
+
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
- 
+
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         ourShader.use();
-        glBindVertexArray(VAO); 
-        glDrawElements(GL_TRIANGLES, values_number_vertices*3, GL_UNSIGNED_INT, 0); 
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, values_number_vertices*3, GL_UNSIGNED_INT, 0);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -154,7 +154,7 @@ void fill_indices( int indices[])
     for(int i = 0; i < data_file_reader.getNumRows(); i++)
     {
         for(int j = 0; j < data_file_reader.getNumColumns(); j++)
-        { 
+        {
             if(i < data_file_reader.getNumRows() - 1 && j < data_file_reader.getNumColumns() - 1)
             {
                 indices[index] = current_vertex;
